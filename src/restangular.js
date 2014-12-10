@@ -452,11 +452,25 @@ module.provider('Restangular', function() {
       return object.addElementTransformer(route, false, fn);
     };
 
+    function getFullRoute(elem) {
+      var currentElem = elem
+      var fullRoute = [];
+
+      do {
+        fullRoute.splice(0, 0, currentElem.route);
+        currentElem = currentElem.parentResource;
+      }
+      while(currentElem !== null);
+
+      return fullRoute.join('/');
+    }
+
     config.transformElem = function(elem, isCollection, route, Restangular, force) {
       if (!force && !config.transformLocalElements && !elem[config.restangularFields.fromServer]) {
         return elem;
       }
-      var typeTransformers = config.transformers[route];
+      var fullRoute = getFullRoute(elem);
+      var typeTransformers = config.transformers[fullRoute] || config.transformers[route];
       var changedElem = elem;
       if (typeTransformers) {
         _.each(typeTransformers, function(transformer) {
